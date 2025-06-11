@@ -50,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (name: string, email: string, password: string) => {
     setLoading(true);
+    console.log('Signing up with:', { name, email, password });
     try {
       const userData = await authService.signup(name, email, password);
       setUser(userData);

@@ -1,31 +1,44 @@
-// This file is a placeholder for the User model.
-// It would be implemented with MongoDB and Mongoose.
-// Here's what it would look like:
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
-/*
-import mongoose from 'mongoose';
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    min: 2,
-    max: 100
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    max: 100,
-    lowercase: true
-  },
-  password: {
-    type: String,
-    required: true,
-    min: 8,
-    max: 1024
+// Hash the password before saving it to the database
+userSchema.pre("save", async function (next) {
+  const user = this;
+  if (!user.isModified("password")) return next();
+
+  try {
+    const salt = await bcrypt.genSalt();
+    user.password = await bcrypt.hash(user.password, salt);
+    next();
+  } catch (error) {
+    return next(error);
   }
-}, { timestamps: true });
+});
 
-export default mongoose.model('User', userSchema);
-*/
+// Compare the given password with the hashed password in the database
+userSchema.methods.comparePassword = async function (password) {
+  return bcrypt.compare(password, this.password);
+};
+
+const User = mongoose.model("User", userSchema);
+
+export default User;

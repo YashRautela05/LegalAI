@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = '/api'; // This will be proxied to the backend in development
+const API_URL = 'http://localhost:3000'; 
+// This will be proxied to the backend in development
+axios.defaults.withCredentials = true;
 
 interface User {
   id: string;
@@ -34,40 +36,15 @@ const initializeAuth = () => {
 initializeAuth();
 
 const login = async (email: string, password: string): Promise<User> => {
-  try {
-    // This will call the backend when it's set up
-    // For now, we'll use a mock implementation
-    const response = await axios.post<AuthResponse>(`${API_URL}/login`, { email, password });
-    setToken(response.data.token);
-    return response.data.user;
-  } catch (error) {
-    // For development, return mock data
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Using mock login in development mode');
-      const mockUser = { id: '1', email, name: 'Demo User' };
-      setToken('mock-token');
-      return mockUser;
-    }
-    throw error;
-  }
+  const response = await axios.post<AuthResponse>(`${API_URL}/auth/login`, { email, password });
+  setToken(response.data.token);
+  return response.data.user;
 };
 
 const signup = async (name: string, email: string, password: string): Promise<User> => {
-  try {
-    // This will call the backend when it's set up
-    const response = await axios.post<AuthResponse>(`${API_URL}/register`, { name, email, password });
-    setToken(response.data.token);
-    return response.data.user;
-  } catch (error) {
-    // For development, return mock data
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Using mock signup in development mode');
-      const mockUser = { id: '1', email, name };
-      setToken('mock-token');
-      return mockUser;
-    }
-    throw error;
-  }
+  const response = await axios.post<AuthResponse>(`${API_URL}/auth/register`, { name, email, password });
+  setToken(response.data.token);
+  return response.data.user;
 };
 
 const getCurrentUser = async (): Promise<User | null> => {
@@ -76,15 +53,9 @@ const getCurrentUser = async (): Promise<User | null> => {
   if (!token) return null;
 
   try {
-    // This will call the backend when it's set up
-    const response = await axios.get<User>(`${API_URL}/me`);
+    const response = await axios.get<User>(`${API_URL}/user/profile`);
     return response.data;
   } catch {
-    // For development, return mock data
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Using mock user in development mode');
-      return { id: '1', email: 'demo@example.com', name: 'Demo User' };
-    }
     removeToken();
     return null;
   }
